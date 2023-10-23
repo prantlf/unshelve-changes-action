@@ -1,4 +1,4 @@
-# Unshelve Build Output
+# Unshelve Changed Files
 
 GitHub action for restoring modified files from cache, which were stored by [shelve-changes-action] in another job earlier.
 
