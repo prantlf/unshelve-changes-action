@@ -47,7 +47,7 @@ runs:
       fail-on-cache-miss: true
       enableCrossOsArchive: true
   - name: Delete files from cache
-    if: ${{ steps.setup.outputs.enable == 'true' }}
+    if: ${{ steps.setup.outputs.enable == 'true' && inputs.discard-shelf == 'true' }}
     uses: prantlf/delete-cache-action@v2
     with:
       key: shelved-changes-${{ github.sha }}
