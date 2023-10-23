@@ -1,0 +1,104 @@
+name: Test or Release
+
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - '**'
+    paths-ignore:
+      - '**/*.md'
+      - LICENSE
+  pull_request:
+
+jobs:
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+    - name: Simulate changes
+      shell: bash
+      run: cp LICENSE test
+    - name: Store test archive
+      uses: actions/cache/save@v3
+      with:
+        path: test
+        key: shelved-changes-${{ github.sha }}
+        enableCrossOsArchive: true
+    - name: Clear changes
+      shell: bash
+      run: rm test
+    - name: Test
+      id: test
+      uses: ./
+      with:
+        files: test
+    - name: Check changes
+      shell: bash
+      run: |
+        if [[ ! -f "test" ]]; then
+          echo "changes not restored"
+          exit 1
+        fi
+
+  macos:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+    - name: Simulate changes
+      shell: bash
+      run: cp LICENSE test
+    - name: Store test archive
+      uses: actions/cache/save@v3
+      with:
+        path: test
+        key: shelved-changes-${{ github.sha }}
+        enableCrossOsArchive: true
+    - name: Clear changes
+      shell: bash
+      run: rm test
+    - name: Test
+      id: test
+      uses: ./
+      with:
+        files: test
+    - name: Check changes
+      shell: bash
+      run: |
+        if [[ ! -f "test" ]]; then
+          echo "changes not restored"
+          exit 1
+        fi
+
+  windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+    - name: Simulate changes
+      shell: bash
+      run: cp LICENSE test
+    - name: Store test archive
+      uses: actions/cache/save@v3
+      with:
+        path: test
+        key: shelved-changes-${{ github.sha }}
+        enableCrossOsArchive: true
+    - name: Clear changes
+      shell: bash
+      run: rm test
+    - name: Test
+      id: test
+      uses: ./
+      with:
+        files: test
+    - name: Check changes
+      shell: bash
+      run: |
+        if [[ ! -f "test" ]]; then
+          echo "changes not restored"
+          exit 1
+        fi

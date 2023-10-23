@@ -1,0 +1,53 @@
+name: 'Unshelve Build Output'
+description: 'GitHub action for restoring modified files from cache, which were stored by shelve-changes-action in another job earlier.'
+author: prantlf
+
+branding:
+  icon: download
+  color: blue
+
+inputs:
+  files:
+    description: >-
+      Files to be restored from the cache, separated by spaces. Mandatory.
+    required: true
+  branches:
+    description: >-
+      Branches which this action should run for, which are used to publishing releases. Use spaces for separating the branch names. If you want to use multiple lines in YAML, introduce them with ">-". If you want to allow all branches, set the value to "*".
+    default: main master
+  enable:
+    description: >-
+      Can be set to `false` to prevent this action from running. It's helpful in the pipeline, which will not continue releasing, but only building and testing, and that will be decided in the middle of a job execution.
+    default: true
+  discard-shelf:
+    description: >-
+      Can be set to `false` to prevent automatic discarding of the shelved files from the cache.
+    default: true
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Setup parameters
+    if: ${{ inputs.enable == 'true' }}
+    id: setup
+    env:
+      UC_NAME: ${{ inputs.name }}
+      UC_BRANCHES: ${{ inputs.branches }}
+    shell: bash
+    run: |
+      if [[ "$UC_BRANCHES" == "*" || " $UC_BRANCHES " == *" $GITHUB_REF_NAME "* ]]; then
+        echo "enable=true" >> $GITHUB_OUTPUT
+      fi
+  - name: Extract files from cache
+    if: ${{ steps.setup.outputs.enable == 'true' }}
+    uses: actions/cache/restore@v3
+    with:
+      path: ${{ inputs.files }}
+      key: shelved-changes-${{ github.sha }}
+      fail-on-cache-miss: true
+      enableCrossOsArchive: true
+  - name: Delete files from cache
+    if: ${{ steps.setup.outputs.enable == 'true' }}
+    uses: prantlf/delete-cache-action@v2
+    with:
+      key: shelved-changes-${{ github.sha }}
